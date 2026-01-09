@@ -1,114 +1,151 @@
-import Listing from '../models/listing.model.js';
-import { errorHandler } from '../utils/error.js';
+import mongoose from "mongoose";
+import Listing from "../models/listing.model.js";
+import createError from "../utils/error.js";
 
+/* ===============================
+   CREATE LISTING
+================================ */
 export const createListing = async (req, res, next) => {
   try {
-    const listing = await Listing.create(req.body);
-    return res.status(201).json(listing);
-  } catch (error) {
-    next(error);
+    const {
+      name,
+      description,
+      address,
+      state,
+      city,
+      cityType,
+      distance,
+      pincode,
+      phone,
+      type,
+      category,
+      price,
+      features,
+      imageUrls,
+    } = req.body;
+
+    if (
+      !name ||
+      !description ||
+      !address ||
+      !state ||
+      !city ||
+      !cityType ||
+      !type ||
+      !category ||
+      !price ||
+      !phone ||
+      !imageUrls ||
+      imageUrls.length === 0
+    ) {
+      return next(createError(400, "Missing required fields"));
+    }
+
+    const listing = await Listing.create({
+      name,
+      description,
+      address,
+      state,
+      city,
+      cityType,
+      distance,
+      pincode,
+      phone,
+      type,
+      category,
+      price,
+      features: features || {},
+      imageUrls,
+      userRef: req.user.id,
+    });
+
+    res.status(201).json(listing);
+  } catch (err) {
+    next(err);
   }
 };
 
+/* ===============================
+   GET LISTING BY ID
+================================ */
+export const getListingById = async (req, res, next) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return next(createError(400, "Invalid listing ID"));
+    }
+
+    const listing = await Listing.findById(req.params.id);
+    if (!listing) return next(createError(404, "Listing not found"));
+
+    res.status(200).json(listing);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/* ===============================
+   SEARCH LISTINGS
+================================ */
+export const searchListings = async (req, res, next) => {
+  try {
+    const { searchTerm = "", state, city, type, category } = req.query;
+
+    const query = {
+      $or: [
+        { name: { $regex: searchTerm, $options: "i" } },
+        { address: { $regex: searchTerm, $options: "i" } },
+        { city: { $regex: searchTerm, $options: "i" } },
+      ],
+    };
+
+    if (state) query.state = state;
+    if (city) query.city = city;
+    if (type) query.type = type;
+    if (category) query.category = category;
+
+    const listings = await Listing.find(query).sort({ createdAt: -1 });
+    res.status(200).json(listings);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/* ===============================
+   MY LISTINGS
+================================ */
+export const getMyListings = async (req, res, next) => {
+  try {
+    const listings = await Listing.find({ userRef: req.user.id }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json(listings);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/* ===============================
+   DELETE LISTING (OWNER ONLY)
+================================ */
 export const deleteListing = async (req, res, next) => {
-  const listing = await Listing.findById(req.params.id);
-
-  if (!listing) {
-    return next(errorHandler(404, 'Listing not found!'));
-  }
-
-  if (req.user.id !== listing.userRef) {
-    return next(errorHandler(401, 'You can only delete your own listings!'));
-  }
-
-  try {
-    await Listing.findByIdAndDelete(req.params.id);
-    res.status(200).json('Listing has been deleted!');
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateListing = async (req, res, next) => {
-  const listing = await Listing.findById(req.params.id);
-  if (!listing) {
-    return next(errorHandler(404, 'Listing not found!'));
-  }
-  if (req.user.id !== listing.userRef) {
-    return next(errorHandler(401, 'You can only update your own listings!'));
-  }
-
-  try {
-    const updatedListing = await Listing.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    res.status(200).json(updatedListing);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getListing = async (req, res, next) => {
   try {
     const listing = await Listing.findById(req.params.id);
+
     if (!listing) {
-      return next(errorHandler(404, 'Listing not found!'));
-    }
-    res.status(200).json(listing);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getListings = async (req, res, next) => {
-  try {
-    const limit = parseInt(req.query.limit) || 9;
-    const startIndex = parseInt(req.query.startIndex) || 0;
-    let offer = req.query.offer;
-
-    if (offer === undefined || offer === 'false') {
-      offer = { $in: [false, true] };
+      return next(createError(404, "Listing not found"));
     }
 
-    let furnished = req.query.furnished;
-
-    if (furnished === undefined || furnished === 'false') {
-      furnished = { $in: [false, true] };
+    if (listing.userRef.toString() !== req.user.id) {
+      return next(createError(401, "You can delete only your own listing"));
     }
 
-    let parking = req.query.parking;
+    await listing.deleteOne();
 
-    if (parking === undefined || parking === 'false') {
-      parking = { $in: [false, true] };
-    }
-
-    let type = req.query.type;
-
-    if (type === undefined || type === 'all') {
-      type = { $in: ['sale', 'rent'] };
-    }
-
-    const searchTerm = req.query.searchTerm || '';
-
-    const sort = req.query.sort || 'createdAt';
-
-    const order = req.query.order || 'desc';
-
-    const listings = await Listing.find({
-      name: { $regex: searchTerm, $options: 'i' },
-      offer,
-      furnished,
-      parking,
-      type,
-    })
-      .sort({ [sort]: order })
-      .limit(limit)
-      .skip(startIndex);
-
-    return res.status(200).json(listings);
-  } catch (error) {
-    next(error);
+    res.status(200).json({
+      success: true,
+      message: "Listing deleted successfully",
+    });
+  } catch (err) {
+    next(err);
   }
 };

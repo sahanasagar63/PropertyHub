@@ -1,85 +1,94 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import OAuth from '../components/OAuth';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { signInSuccess } from "../redux/user/userSlice";
 
 export default function SignUp() {
-  const [formData, setFormData] = useState({});
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
     });
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      setLoading(true);
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
       const data = await res.json();
-      console.log(data);
-      if (data.success === false) {
-        setLoading(false);
-        setError(data.message);
+
+      if (!res.ok) {
+        toast.error(data.message || "Signup failed");
         return;
       }
-      setLoading(false);
-      setError(null);
-      navigate('/sign-in');
+
+      dispatch(signInSuccess(data.user));
+      toast.success("Account created successfully");
+      navigate("/");
     } catch (error) {
-      setLoading(false);
-      setError(error.message);
+      toast.error("Something went wrong");
     }
   };
+
   return (
-    <div className='p-3 max-w-lg mx-auto'>
-      <h1 className='text-3xl text-center font-semibold my-7'>Sign Up</h1>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
+    <div className="max-w-lg mx-auto p-6">
+      <h1 className="text-3xl text-center font-semibold my-7">Sign Up</h1>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
-          type='text'
-          placeholder='username'
-          className='border p-3 rounded-lg'
-          id='username'
-          onChange={handleChange}
-        />
-        <input
-          type='email'
-          placeholder='email'
-          className='border p-3 rounded-lg'
-          id='email'
-          onChange={handleChange}
-        />
-        <input
-          type='password'
-          placeholder='password'
-          className='border p-3 rounded-lg'
-          id='password'
+          type="text"
+          placeholder="Username"
+          id="username"
+          required
+          className="border p-3 rounded"
           onChange={handleChange}
         />
 
-        <button
-          disabled={loading}
-          className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
-        >
-          {loading ? 'Loading...' : 'Sign Up'}
+        <input
+          type="email"
+          placeholder="Email"
+          id="email"
+          required
+          className="border p-3 rounded"
+          onChange={handleChange}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          id="password"
+          required
+          className="border p-3 rounded"
+          onChange={handleChange}
+        />
+
+        <button className="bg-red-700 text-white p-3 rounded uppercase">
+          Sign Up
         </button>
-        <OAuth/>
       </form>
-      <div className='flex gap-2 mt-5'>
-        <p>Have an account?</p>
-        <Link to={'/sign-in'}>
-          <span className='text-blue-700'>Sign in</span>
+
+      <p className="text-center mt-4">
+        Already have an account?{" "}
+        <Link to="/sign-in" className="text-blue-600">
+          Sign in
         </Link>
-      </div>
-      {error && <p className='text-red-500 mt-5'>{error}</p>}
+      </p>
     </div>
   );
 }

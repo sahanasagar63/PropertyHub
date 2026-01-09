@@ -1,0 +1,20 @@
+import express from "express";
+import {
+  getListings,
+  searchListings,
+  createListing,
+  updateListing,
+  getListingById,
+  deleteListing,
+} from "../controllers/listing.controller.js";
+
+const router = express.Router();
+
+router.get("/get", getListings);          // Home page
+router.get("/search", searchListings);    // Search page
+router.post("/create", createListing);
+router.get("/:id", getListingById);
+router.put("/:id", updateListing);
+router.delete("/:id", deleteListing);
+
+export default router;

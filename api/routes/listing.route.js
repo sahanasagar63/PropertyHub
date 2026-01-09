@@ -1,13 +1,28 @@
-import express from 'express';
-import { createListing, deleteListing, updateListing, getListing, getListings } from '../controllers/listing.controller.js';
-import { verifyToken } from '../utils/verifyUser.js';
+import express from "express";
+import {
+  createListing,
+  getListingById,
+  searchListings,
+  getMyListings,
+  deleteListing,
+} from "../controllers/listing.controller.js";
+import { verifyToken } from "../utils/verifyUser.js";
 
 const router = express.Router();
 
-router.post('/create', verifyToken, createListing);
-router.delete('/delete/:id', verifyToken, deleteListing);
-router.post('/update/:id', verifyToken, updateListing);
-router.get('/get/:id', getListing);
-router.get('/get', getListings);
+// CREATE
+router.post("/", verifyToken, createListing);
+
+// SEARCH
+router.get("/search", searchListings);
+
+// MY LISTINGS
+router.get("/my", verifyToken, getMyListings);
+
+// DELETE
+router.delete("/:id", verifyToken, deleteListing);
+
+// SINGLE LISTING
+router.get("/:id", getListingById);
 
 export default router;

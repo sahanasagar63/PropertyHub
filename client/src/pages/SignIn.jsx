@@ -1,81 +1,118 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  signInStart,
-  signInSuccess,
-  signInFailure,
-} from '../redux/user/userSlice';
-import OAuth from '../components/OAuth';
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import { signInSuccess } from "../redux/user/userSlice";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 export default function SignIn() {
-  const [formData, setFormData] = useState({});
-  const { loading, error } = useSelector((state) => state.user);
-  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
     });
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      dispatch(signInStart());
-      const res = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const res = await fetch("/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
       const data = await res.json();
-      console.log(data);
-      if (data.success === false) {
-        dispatch(signInFailure(data.message));
+
+      if (!res.ok) {
+        toast.error(data.message || "Sign in failed");
         return;
       }
-      dispatch(signInSuccess(data));
-      navigate('/');
+
+      dispatch(signInSuccess(data.user));
+      toast.success("Signed in successfully");
+      navigate("/");
     } catch (error) {
-      dispatch(signInFailure(error.message));
+      toast.error("Something went wrong");
     }
   };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idToken: credentialResponse.credential,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Google login failed");
+        return;
+      }
+
+      dispatch(signInSuccess(data.user));
+      toast.success("Signed in with Google");
+      navigate("/");
+    } catch (err) {
+      toast.error("Google sign in failed");
+    }
+  };
+
   return (
-    <div className='p-3 max-w-lg mx-auto'>
-      <h1 className='text-3xl text-center font-semibold my-7'>Sign In</h1>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
+    <div className="max-w-lg mx-auto p-6">
+      <h1 className="text-3xl text-center font-semibold my-7">Sign In</h1>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
-          type='email'
-          placeholder='email'
-          className='border p-3 rounded-lg'
-          id='email'
+          type="email"
+          placeholder="Email"
+          id="email"
+          className="border p-3 rounded"
           onChange={handleChange}
-        />
-        <input
-          type='password'
-          placeholder='password'
-          className='border p-3 rounded-lg'
-          id='password'
-          onChange={handleChange}
+          required
         />
 
-        <button
-          disabled={loading}
-          className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
-        >
-          {loading ? 'Loading...' : 'Sign In'}
+        <input
+          type="password"
+          placeholder="Password"
+          id="password"
+          className="border p-3 rounded"
+          onChange={handleChange}
+          required
+        />
+
+        <button className="bg-red-700 text-white p-3 rounded uppercase">
+          Sign In
         </button>
-        <OAuth/>
       </form>
-      <div className='flex gap-2 mt-5'>
-        <p>Dont have an account?</p>
-        <Link to={'/sign-up'}>
-          <span className='text-blue-700'>Sign up</span>
-        </Link>
+
+      <div className="flex justify-center my-4">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => toast.error("Google login failed")}
+        />
       </div>
-      {error && <p className='text-red-500 mt-5'>{error}</p>}
+
+      <p className="text-center mt-4">
+        Don&apos;t have an account?{" "}
+        <Link to="/sign-up" className="text-blue-600">
+          Sign up
+        </Link>
+      </p>
     </div>
   );
 }

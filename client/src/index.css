@@ -1,7 +1,126 @@
+/* ===========================
+   FINAL index.css – LOCKED
+   PropertyHub (Premium UI)
+   =========================== */
+
+/* Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body{
-    background-color: rgb(241, 245, 241);
+/* ---------- Theme Variables ---------- */
+:root{
+  --bg-start:#fff7ed;
+  --bg-end:#ffefd6;
+  --accent:#f97316;
+  --accent-dark:#c2410c;
+  --border-soft:rgba(0,0,0,0.05);
+  --radius-lg:1rem;
+  --radius-md:.75rem;
 }
+
+/* ---------- Base ---------- */
+html,body,#root{
+  height:100%;
+}
+body{
+  margin:0;
+  background:linear-gradient(135deg,var(--bg-start),var(--bg-end));
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto;
+  color:#0f172a;
+}
+
+/* ---------- Navbar ---------- */
+.navbar-premium{
+  background:rgba(255,255,255,0.85);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--border-soft);
+  box-shadow:0 4px 18px rgba(0,0,0,0.04);
+}
+
+/* ---------- Home Hero ---------- */
+.home-hero{
+  min-height:90vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.55)),
+    url("/hero.jpg");
+  background-size:cover;
+  background-position:center;
+}
+
+.hero-box{
+  background:rgba(255,255,255,0.96);
+  border-radius:var(--radius-lg);
+  padding:2rem;
+  width:100%;
+  max-width:900px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.15);
+}
+
+/* ---------- Inputs ---------- */
+.premium-input,
+.premium-select{
+  width:100%;
+  padding:.75rem 1rem;
+  border-radius:.6rem;
+  border:1px solid var(--border-soft);
+  background:white;
+}
+
+.premium-input:focus,
+.premium-select:focus{
+  outline:none;
+  border-color:var(--accent);
+}
+
+/* ---------- Buttons ---------- */
+.premium-btn{
+  background:linear-gradient(180deg,var(--accent),var(--accent-dark));
+  color:white;
+  border:none;
+  padding:.8rem 1.5rem;
+  border-radius:.7rem;
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* ---------- Filters ---------- */
+.filter-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:.75rem;
+  margin-top:1rem;
+}
+
+/* ---------- Search Button ---------- */
+.search-btn{
+  margin-top:1.2rem;
+  width:100%;
+}
+
+/* ---------- Utility ---------- */
+.text-muted{
+  color:#64748b;
+  font-size:.9rem;
+}
+.field {
+  margin-bottom: 18px;
+}
+
+.field label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+/* END – DO NOT EDIT */
