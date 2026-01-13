@@ -8,6 +8,7 @@ export default function SignUp() {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
+    phone: "",
     password: "",
   });
 
@@ -23,6 +24,11 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.email && !formData.phone) {
+      toast.error("Please enter email or phone number");
+      return;
+    }
 
     try {
       const res = await fetch("/api/auth/signup", {
@@ -62,9 +68,16 @@ export default function SignUp() {
 
         <input
           type="email"
-          placeholder="Email"
+          placeholder="Email (optional)"
           id="email"
-          required
+          className="border p-3 rounded"
+          onChange={handleChange}
+        />
+
+        <input
+          type="tel"
+          placeholder="Phone number (optional)"
+          id="phone"
           className="border p-3 rounded"
           onChange={handleChange}
         />

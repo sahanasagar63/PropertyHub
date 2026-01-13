@@ -10,12 +10,15 @@ import listingRoutes from "./routes/listing.route.js";
 import uploadRoutes from "./routes/upload.route.js";
 import wishlistRoutes from "./routes/wishlist.route.js";
 import reportRoutes from "./routes/report.route.js";
+import adminRoutes from "./routes/admin.route.js"; // ✅ correct import
+import userRoutes from "./routes/user.route.js";
 
 dotenv.config();
 
 const app = express();
 const __dirname = path.resolve();
 
+/* ================= MIDDLEWARE ================= */
 app.use(express.json());
 app.use(cookieParser());
 
@@ -26,6 +29,7 @@ app.use(
   })
 );
 
+/* ================= DATABASE ================= */
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
@@ -34,17 +38,22 @@ mongoose
     process.exit(1);
   });
 
+/* ================= ROUTES ================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/admin", adminRoutes); // ✅ FIXED LINE
+app.use("/api/user", userRoutes);
 
+/* ================= FRONTEND ================= */
 app.use(express.static(path.join(__dirname, "../client/dist")));
 app.get("*", (req, res) =>
   res.sendFile(path.join(__dirname, "../client/dist/index.html"))
 );
 
+/* ================= ERROR HANDLER ================= */
 app.use((err, req, res, next) => {
   console.error("🔥 ERROR:", err);
   res.status(err.status || 500).json({
@@ -53,6 +62,7 @@ app.use((err, req, res, next) => {
   });
 });
 
+/* ================= SERVER ================= */
 app.listen(process.env.PORT || 3000, () =>
-  console.log("🚀 Server running")
+  console.log("🚀 Server running on port 3000")
 );

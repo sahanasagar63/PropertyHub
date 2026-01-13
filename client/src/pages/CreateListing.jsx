@@ -20,7 +20,7 @@ export default function CreateListing() {
     type: "sale",
     price: "",
     cityType: "inside",
-    distance: "", // stored as "12 km"
+    distance: "",
     features: {},
   });
 
@@ -42,15 +42,6 @@ export default function CreateListing() {
 
   const handleImageChange = (e) => {
     setFiles(Array.from(e.target.files));
-  };
-
-  /* Distance handler → auto add "km" */
-  const handleDistanceChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ""); // numbers only
-    setFormData({
-      ...formData,
-      distance: value ? `${value} km` : "",
-    });
   };
 
   /* ================= SUBMIT ================= */
@@ -88,9 +79,9 @@ export default function CreateListing() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error("Failed to create listing");
 
-      alert("✅ Listing created");
+      alert("✅ Listing created successfully");
       navigate("/");
     } catch (err) {
       alert(err.message);
@@ -140,34 +131,35 @@ export default function CreateListing() {
           ))}
       </select>
 
-      {/* PINCODE */}
-      <input name="pincode" placeholder="Pincode" className="input" onChange={handleChange} />
-
       {/* CITY TYPE */}
       <select
         name="cityType"
         className="input"
         value={formData.cityType}
-        onChange={(e) =>
-          setFormData({ ...formData, cityType: e.target.value, distance: "" })
-        }
+        onChange={handleChange}
         required
       >
         <option value="inside">Inside City</option>
         <option value="outside">Outside City</option>
       </select>
 
-      {/* DISTANCE (ONLY IF OUTSIDE) */}
+      {/* DISTANCE (ONLY IF OUTSIDE CITY) */}
       {formData.cityType === "outside" && (
         <input
+          type="number"
           placeholder="Distance from city (km)"
           className="input"
-          value={formData.distance.replace(" km", "")}
-          onChange={handleDistanceChange}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              distance: `${e.target.value} km`,
+            })
+          }
           required
         />
       )}
 
+      <input name="pincode" placeholder="Pincode" className="input" onChange={handleChange} />
       <input name="phone" placeholder="Phone" className="input" onChange={handleChange} required />
 
       {/* CATEGORY */}
@@ -184,7 +176,34 @@ export default function CreateListing() {
 
       <input name="price" placeholder="Price" className="input" onChange={handleChange} required />
 
-      {/* ===== CATEGORY BASED FEATURES (UNCHANGED) ===== */}
+      {/* ===== CATEGORY BASED FEATURES ===== */}
+
+      {(formData.category === "house" || formData.category === "apartment") && (
+        <>
+          <input name="bedrooms" placeholder="Bedrooms" className="input" onChange={handleFeatureChange} />
+          <input name="bathrooms" placeholder="Bathrooms" className="input" onChange={handleFeatureChange} />
+          <input name="parking" placeholder="Parking (Yes/No)" className="input" onChange={handleFeatureChange} />
+          <input name="furnished" placeholder="Furnished (Yes/No)" className="input" onChange={handleFeatureChange} />
+          <input name="squareFeet" placeholder="Built-up Area (sqft)" className="input" onChange={handleFeatureChange} />
+          <input name="balcony" placeholder="Balcony (Yes/No)" className="input" onChange={handleFeatureChange} />
+        </>
+      )}
+
+      {formData.category === "apartment" && (
+        <>
+          <input name="floor" placeholder="Floor" className="input" onChange={handleFeatureChange} />
+          <input name="lift" placeholder="Lift (Yes/No)" className="input" onChange={handleFeatureChange} />
+        </>
+      )}
+
+      {formData.category === "villa" && (
+        <>
+          <input name="bedrooms" placeholder="Bedrooms" className="input" onChange={handleFeatureChange} />
+          <input name="landArea" placeholder="Land Area (sqft)" className="input" onChange={handleFeatureChange} />
+          <input name="garden" placeholder="Garden (Yes/No)" className="input" onChange={handleFeatureChange} />
+        </>
+      )}
+
       {formData.category === "plot" && (
         <>
           <input name="plotArea" placeholder="Plot Area (sqft)" className="input" onChange={handleFeatureChange} />
@@ -193,8 +212,33 @@ export default function CreateListing() {
         </>
       )}
 
+      {formData.category === "farmhouse" && (
+        <>
+          <input name="landArea" placeholder="Land Area" className="input" onChange={handleFeatureChange} />
+          <input name="waterSource" placeholder="Water Source" className="input" onChange={handleFeatureChange} />
+          <input name="fencing" placeholder="Fencing (Yes/No)" className="input" onChange={handleFeatureChange} />
+        </>
+      )}
+
+      {formData.category === "agricultural" && (
+        <>
+          <input name="landArea" placeholder="Land Area (acre)" className="input" onChange={handleFeatureChange} />
+          <input name="soilType" placeholder="Soil Type" className="input" onChange={handleFeatureChange} />
+          <input name="waterSource" placeholder="Water Source" className="input" onChange={handleFeatureChange} />
+        </>
+      )}
+
+      {formData.category === "store" && (
+        <>
+          <input name="shopType" placeholder="Best suited for" className="input" onChange={handleFeatureChange} />
+          <input name="squareFeet" placeholder="Shop Area (sqft)" className="input" onChange={handleFeatureChange} />
+          <input name="crowdArea" placeholder="Crowded Area (Yes/No)" className="input" onChange={handleFeatureChange} />
+        </>
+      )}
+
       {/* IMAGES */}
       <input type="file" multiple onChange={handleImageChange} />
+
       <button disabled={loading} className="bg-black text-white p-3 w-full">
         {loading ? "Uploading..." : "CREATE LISTING"}
       </button>

@@ -2,14 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CityTiles from "../components/CityTiles";
 import ListingsPreview from "../components/ListingsPreview";
+import AdminFooter from "../components/AdminFooter";
+import AdminContactPopup from "../components/AdminContactPopup";
 
 export default function Home() {
   const navigate = useNavigate();
 
-  const [type, setType] = useState("sale"); // sale | rent
+  const [type, setType] = useState("sale");
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState("");
+  const [showAdminPopup, setShowAdminPopup] = useState(false);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -31,6 +34,7 @@ export default function Home() {
           <h1 className="text-white text-4xl md:text-5xl font-bold text-center">
             Properties in India 🇮🇳
           </h1>
+
           <p className="text-white/90 mt-3 text-lg">
             Buy • Rent • Sell properties across India
           </p>
@@ -38,19 +42,15 @@ export default function Home() {
           {/* SEARCH CARD */}
           <div className="bg-white w-full max-w-4xl mt-8 rounded-xl p-6 shadow-lg">
 
-            {/* SEARCH INPUT */}
             <input
               type="text"
               placeholder="Search by city or address"
-              className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full border rounded-lg px-4 py-3"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
 
-            {/* FILTERS */}
             <div className="grid md:grid-cols-3 gap-4 mt-4">
-
-              {/* BUY / RENT */}
               <select
                 className="border rounded-lg px-4 py-3"
                 value={type}
@@ -60,7 +60,6 @@ export default function Home() {
                 <option value="rent">Rent</option>
               </select>
 
-              {/* CATEGORY */}
               <select
                 className="border rounded-lg px-4 py-3"
                 value={category}
@@ -75,7 +74,6 @@ export default function Home() {
                 <option value="store">Commercial / Store</option>
               </select>
 
-              {/* PRICE SORT */}
               <select
                 className="border rounded-lg px-4 py-3"
                 value={sort}
@@ -87,22 +85,26 @@ export default function Home() {
               </select>
             </div>
 
-            {/* SEARCH BUTTON */}
             <button
               onClick={handleSearch}
-              className="bg-orange-600 text-white w-full mt-6 py-3 rounded-lg hover:bg-orange-700"
+              className="bg-orange-600 text-white w-full mt-6 py-3 rounded-lg"
             >
               SEARCH
             </button>
+            
+
           </div>
         </div>
       </div>
 
-      {/* CITY SECTION */}
       <CityTiles />
-
-      {/* PREVIEW LISTINGS */}
       <ListingsPreview />
+
+      {/* ✅ FOOTER */}
+      <AdminFooter />
+      {showAdminPopup && (
+  <AdminContactPopup onClose={() => setShowAdminPopup(false)} />
+)}
     </>
   );
 }

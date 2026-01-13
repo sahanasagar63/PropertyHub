@@ -11,6 +11,7 @@ import { verifyToken } from "../utils/verifyUser.js";
 const router = express.Router();
 
 // CREATE
+
 router.post("/", verifyToken, createListing);
 
 // SEARCH

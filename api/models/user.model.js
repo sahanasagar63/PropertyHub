@@ -9,8 +9,19 @@ const userSchema = new mongoose.Schema(
 
     email: {
       type: String,
-      required: true,
       unique: true,
+      sparse: true,
+    },
+
+    phone: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
+    address: {
+      type: String,          // ✅ ADD THIS
+      default: "",
     },
 
     password: {
@@ -20,7 +31,19 @@ const userSchema = new mongoose.Schema(
 
     avatar: {
       type: String,
-      default: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+      default:
+        "https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png",
+    },
+
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+
+    isBlocked: {
+      type: Boolean,
+      default: false,
     },
 
     authProvider: {
@@ -29,7 +52,6 @@ const userSchema = new mongoose.Schema(
       default: "local",
     },
 
-    // ❤️ WISHLIST (FIX)
     wishlist: [
       {
         type: mongoose.Schema.Types.ObjectId,

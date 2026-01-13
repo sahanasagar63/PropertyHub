@@ -10,44 +10,32 @@ export default function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const auth = getAuth();
-
   const [searchTerm, setSearchTerm] = useState("");
 
-  /* 🔍 SEARCH */
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!searchTerm.trim()) return;
     navigate(`/search?searchTerm=${encodeURIComponent(searchTerm)}`);
   };
 
-  /* 🚪 LOGOUT */
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      dispatch(signOutSuccess());
-      navigate("/");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
+    await signOut(auth);
+    await fetch("/api/auth/signout", { method: "POST", credentials: "include" });
+    dispatch(signOutSuccess());
+    navigate("/");
   };
 
   return (
     <header className="bg-slate-200 shadow-md">
       <div className="flex justify-between items-center max-w-6xl mx-auto p-3">
-
-        {/* LOGO */}
         <Link to="/">
-          <h1 className="font-bold text-xl flex gap-1">
-            <span className="text-slate-500">Property</span>
+          <h1 className="font-bold text-xl">
+            <span className="text-slate-500">Property</span>{" "}
             <span className="text-slate-700">Hub</span>
           </h1>
         </Link>
 
-        {/* SEARCH */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-slate-100 p-3 rounded-lg flex items-center"
-        >
+        <form onSubmit={handleSubmit} className="bg-slate-100 p-3 rounded-lg flex items-center">
           <input
             type="text"
             placeholder="Search..."
@@ -55,61 +43,38 @@ export default function Header() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button type="submit">
-            <FaSearch className="text-slate-600" />
-          </button>
+          <FaSearch className="text-slate-600" />
         </form>
 
-        {/* NAVIGATION */}
         <ul className="flex gap-4 items-center">
+          <Link to="/"><li>Home</li></Link>
+          <Link to="/about"><li>About</li></Link>
 
-          <Link to="/">
-            <li className="hidden sm:inline text-slate-700 hover:underline">
-              Home
-            </li>
-          </Link>
-
-          <Link to="/about">
-            <li className="hidden sm:inline text-slate-700 hover:underline">
-              About
-            </li>
-          </Link>
-
-          {/* ❤️ WISHLIST (ONLY LOGGED IN) */}
           {currentUser && (
-            <Link to="/wishlist" title="Wishlist">
-              <FaHeart className="text-red-600 text-lg hover:scale-110 transition" />
+            <Link to="/wishlist"><FaHeart className="text-red-600" /></Link>
+          )}
+
+          {currentUser?.role === "admin" && (
+            <Link to="/admin">
+              <li className="text-purple-700 font-semibold">Admin</li>
             </Link>
           )}
 
-          {/* USER */}
           {currentUser ? (
             <>
               <Link to="/profile">
                 <img
-                  src={
-                    currentUser.photoURL ||
-                    currentUser.avatar ||
-                    "https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png"
-                  }
+                  src={currentUser.avatar}
                   alt="profile"
                   className="h-8 w-8 rounded-full object-cover"
                 />
               </Link>
-
-              <button
-                onClick={handleLogout}
-                className="text-red-600 font-semibold hover:underline"
-              >
+              <button onClick={handleLogout} className="text-red-600 font-semibold">
                 Logout
               </button>
             </>
           ) : (
-            <Link to="/sign-in">
-              <li className="font-semibold text-slate-700 hover:underline">
-                Sign in
-              </li>
-            </Link>
+            <Link to="/sign-in"><li>Sign in</li></Link>
           )}
         </ul>
       </div>

@@ -4,11 +4,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { signInSuccess } from "../redux/user/userSlice";
 import { GoogleLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
 
 export default function SignIn() {
   const [formData, setFormData] = useState({
-    email: "",
+    identifier: "", // email OR phone
     password: "",
   });
 
@@ -78,21 +77,21 @@ export default function SignIn() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
-          type="email"
-          placeholder="Email"
-          id="email"
+          type="text"
+          placeholder="Email or Phone"
+          id="identifier"
+          required
           className="border p-3 rounded"
           onChange={handleChange}
-          required
         />
 
         <input
           type="password"
           placeholder="Password"
           id="password"
+          required
           className="border p-3 rounded"
           onChange={handleChange}
-          required
         />
 
         <button className="bg-red-700 text-white p-3 rounded uppercase">
